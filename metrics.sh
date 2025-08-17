@@ -47,7 +47,7 @@ pip install -r dispnese-prediction/requirements.txt
 python dispnese-prediction/calculate_metrics.py
 
 #Copy result to output bucket
-gsutil cp future*.json gs://model-output-preds/
+gsutil cp *.json gs://model-output-preds/
 
 rm -f *.json
 
