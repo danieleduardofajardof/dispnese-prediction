@@ -51,7 +51,7 @@ gsutil cp *.json gs://model-output-preds/
 
 rm -f *.json
 
-echo "All CSV files deleted."
+echo "All garbage files deleted."
 
 end_time=$(date +%s)
 elapsed=$(( end_time - start_time ))
