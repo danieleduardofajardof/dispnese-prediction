@@ -53,5 +53,9 @@ rm -f *.csv
 
 echo "All CSV files deleted."
 
+end_time=$(date +%s)
+elapsed=$(( end_time - start_time ))
+
+
 echo "Script finished at $(date)"
 echo "Total time elapsed: $elapsed seconds"
