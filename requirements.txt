@@ -2,4 +2,4 @@ polars
 xgboost
 pandas
 scikit-learn
-py-arrow
+pyarrow
