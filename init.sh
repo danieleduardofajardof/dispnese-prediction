@@ -31,8 +31,18 @@ source venv/bin/activate
 
 # Upgrade pip inside the venv
 pip install --upgrade pip
+REPO_DIR="dispnese-prediction"
+REPO_URL="https://github.com/danieleduardofajardof/dispnese-prediction.git"
 
-git clone https://github.com/danieleduardofajardof/dispnese-prediction.git
+if [ -d "$REPO_DIR" ]; then
+    echo "Repository exists, pulling latest changes..."
+    cd "$REPO_DIR"
+    git pull
+    cd ..
+else
+    echo "Repository does not exist, cloning..."
+    git clone "$REPO_URL"
+fi
 
 # Install your requirements
 
