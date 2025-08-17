@@ -9,7 +9,7 @@ from datetime import datetime
 dfp_model = pl.read_csv("model_input_export.csv",
     infer_schema_length=10000 )
 # Suppose 'hour' is your index/timestamp column
-index_col = "hour"
+index_col = "ts"
 
 # Convert all other columns to float
 dfp_model = dfp_model.with_columns([
