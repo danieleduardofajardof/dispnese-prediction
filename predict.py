@@ -22,21 +22,21 @@ dfp_model = dfp_model.fill_null(0)
 
 # Ensure your date column is parsed as datetime
 dfp_model = dfp_model.with_columns(
-    pl.col("hour").str.strptime(pl.Datetime, "%Y-%m-%d %H:%M:%S %Z", strict=False)
+    pl.col("ts").str.strptime(pl.Datetime, "%Y-%m-%d %H:%M:%S %Z", strict=False)
 )
 
 # Sort by date
-dfp_model = dfp_model.sort("hour")
+dfp_model = dfp_model.sort("ts")
 
 dfp_model = dfp_model.tail(3000)
 
 target_cols = [c for c in dfp_model.columns if  "grams" in c]
-exog_cols = [c for c in dfp_model.columns if c not in target_cols and c != "hour"]
+exog_cols = [c for c in dfp_model.columns if c not in target_cols and c != "ts"]
 
 
 
 df = dfp_model.to_pandas()
-df.set_index("hour", inplace=True)
+df.set_index("ts", inplace=True)
 
 
 def predict_to_pd(pdf, col, future_periods):
