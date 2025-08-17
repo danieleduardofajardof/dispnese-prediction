@@ -1,3 +1,4 @@
 polars
 xgboost
 pandas
+scikit-learn
