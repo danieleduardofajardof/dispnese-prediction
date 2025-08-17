@@ -1,4 +1,3 @@
-
 import polars as pl
 import pandas as pd
 import xgboost as xgb
@@ -104,4 +103,10 @@ print(all_preds.head())
 
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-all_preds.to_csv(f"future_predictions_{timestamp}.csv", index=False)
+
+# Convert index (timestamps) to strings and rows to dicts
+result_json = {str(ts): row.to_dict() for ts, row in all_preds.iterrows()}
+
+# Save to a JSON file
+with open("predictions_{}.json".format(timestamp), "w") as f:
+    json.dump(result_json, f, indent=4)
