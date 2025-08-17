@@ -91,7 +91,7 @@ def predict_to_pd(pdf, col, future_periods):
 
     return future_df
     
-    future_periods = 24  # 24-hour horizon
+future_periods = 24  # 24-hour horizon
 all_preds = None
 for col in target_cols:
     preds = predict_to_pd(df, col, future_periods)
