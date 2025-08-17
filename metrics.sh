@@ -50,6 +50,7 @@ python dispnese-prediction/calculate_metrics.py
 gsutil cp *.json gs://model-output-preds/
 
 rm -f *.json
+rm -f *.csv
 
 echo "All garbage files deleted."
 
