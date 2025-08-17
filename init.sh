@@ -8,7 +8,7 @@ bq query --use_legacy_sql=false \
 --format=csv \
 --replace \
 --destination_table=analytics.ds_model_input_export \
-'SELECT * FROM analytics.ds__model_input__60min'
+'SELECT * FROM analytics.ds__model_input__60_min'
 
 #Export table as csv to statging bucket
 bq extract --destination_format=CSV \
