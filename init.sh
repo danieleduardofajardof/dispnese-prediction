@@ -47,11 +47,13 @@ pip install -r dispnese-prediction/requirements.txt
 python dispnese-prediction/predict.py
 
 #Copy result to output bucket
-gsutil cp future*.csv gs://model-output-preds/
+echo "Results json file uploaded to GCS"
+gsutil cp *.json gs://model-output-preds/
 
 rm -f *.csv
+rm -f *.json
 
-echo "All CSV files deleted."
+echo "All garbage files deleted."
 
 end_time=$(date +%s)
 elapsed=$(( end_time - start_time ))
