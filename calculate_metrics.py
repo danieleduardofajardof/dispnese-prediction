@@ -1,4 +1,4 @@
-
+import json
 import polars as pl
 import pandas as pd
 import xgboost as xgb
@@ -64,16 +64,30 @@ def metrics_dict(pd_dataframe, lags, col_pred):
     print(f"Mean Percent Under Estimation after correction: {mun_pct_corrected:.4f}")
     return {col_pred+"MUN_corrected":mun_corrected, col_pred+"MUN_pct":mun_pct_corrected}
     
-    
+def munderest(y_actual, y_hat):
+    total_under = sum(max(0, yi - yh) for yi, yh in zip(y_actual, y_hat))
+    return total_under / len(y_hat)
+
+def munderest_pct(y_actual, y_hat):
+    """
+    Percent underestimation metric (like MAPE but only for underestimates)
+    """
+    under_pct = [
+        (yi - yh) / yi * 100
+        for yi, yh in zip(y_actual, y_hat)
+        if yh < yi and yi != 0
+    ]
+    return sum(under_pct) / len(under_pct) if under_pct else 0
+  
     
 future_periods = 24  # 24-hour horizon
 all_metrics = None
 for col in target_cols:
     metrics = metrics_dict(df, future_periods, col)
     if(all_metrics is None):
-        all_metrics = preds
+        all_metrics = metrics
     else:
-        all_metrics = all_metrics | preds
+        all_metrics = all_metrics | metrics
 # Generate timestamp for filename (no colons to avoid issues on some OS)
 timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
 
@@ -82,8 +96,14 @@ filename = f"metrics_{timestamp}.json"
 
 all_metrics = {'ts':timestamp} | all_metrics
 
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        import numpy as np
+        if isinstance(obj, (np.integer, np.floating)):
+            return obj.item()
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super().default(obj)
 
 with open(filename, "w") as f:
-    json.dump(all_metrics, f, indent=2)
-
-print(f"Saved metrics to {filename}")
+    json.dump(all_metrics, f, cls=NpEncoder, indent=2)
