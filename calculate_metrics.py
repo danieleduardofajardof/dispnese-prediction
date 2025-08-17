@@ -4,6 +4,8 @@ import pandas as pd
 import xgboost as xgb
 from sklearn.model_selection import train_test_split
 from datetime import datetime
+from sklearn.metrics import mean_squared_error
+import numpy as np
 
 # Load CSV into Polars DataFrame
 dfp_model = pl.read_csv("model_input_export.csv",
@@ -38,7 +40,8 @@ exog_cols = [c for c in dfp_model.columns if c not in target_cols and c != "ts"]
 df = dfp_model.to_pandas()
 df.set_index("ts", inplace=True)
 
-def metrics_dict(pd_dataframe, lags, col_pred):
+def metrics_dict(pdf, lags, col_pred):
+    pd_dataframe = pdf.copy()
     for lag in range(1, lags+1):
         pd_dataframe[f"lag_{lag}"] = pd_dataframe[col_pred].shift(lag)
 
@@ -57,12 +60,11 @@ def metrics_dict(pd_dataframe, lags, col_pred):
     mun_corrected =  munderest(y_test, corrected_y_pred)
     mun_pct = munderest_pct(y_test, y_pred)
     mun_pct_corrected = munderest_pct(y_test, corrected_y_pred)
+    rmse_val = rmse(y_test, corrected_y_pred)
     print("Results for column named: ", col_pred," with horizon of ", lags," steps ahead." )
-    print(f"Mean Under Estimation: {mun:.4f}")
-    print(f"Mean Under Estimation after correction: {mun_corrected:.4f}")
-    print(f"Mean Percent Under Estimation: {mun_pct:.4f}")
-    print(f"Mean Percent Under Estimation after correction: {mun_pct_corrected:.4f}")
-    return {col_pred+"MUN_corrected":mun_corrected, col_pred+"MUN_pct":mun_pct_corrected}
+    d={col_pred+"_MeanUnderestimation":mun_corrected, col_pred+"_MeanUnderestimation_pct":mun_pct_corrected, col_pred+"_RMSE":rmse_val}
+    print(d)
+    return d
     
 def munderest(y_actual, y_hat):
     total_under = sum(max(0, yi - yh) for yi, yh in zip(y_actual, y_hat))
@@ -79,6 +81,10 @@ def munderest_pct(y_actual, y_hat):
     ]
     return sum(under_pct) / len(under_pct) if under_pct else 0
   
+
+def rmse(y_actual, y_hat):
+    return np.sqrt(mean_squared_error(y_actual, y_hat))
+
     
 future_periods = 24  # 24-hour horizon
 all_metrics = None
