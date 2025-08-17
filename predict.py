@@ -3,7 +3,7 @@ import polars as pl
 import pandas as pd
 import xgboost as xgb
 from sklearn.model_selection import train_test_split
-
+from datetime import datetime
 
 # Load CSV into Polars DataFrame
 dfp_model = pl.read_csv("model_input_export.csv",
@@ -101,6 +101,7 @@ for col in target_cols:
         all_preds = all_preds.join(preds, how="outer")
 
 print(all_preds.head())
-all_preds
-# Optionally export
-all_preds.to_csv("future_predictions.csv")
+
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+all_preds.to_csv(f"future_predictions_{timestamp}.csv", index=False)
