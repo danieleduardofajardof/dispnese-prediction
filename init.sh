@@ -1,3 +1,8 @@
+
+start_time=$(date +%s)
+
+echo "Script started at $(date)"
+
 #Create table from view
 bq query --use_legacy_sql=false \
 --format=csv \
@@ -37,5 +42,10 @@ python dispnese-prediction/predict.py
 #Copy result to output bucket
 gsutil cp future*.csv gs://model-output-preds/
 
+rm -f *.csv
 
+echo "All CSV files deleted."
+
+echo "Script finished at $(date)"
+echo "Total time elapsed: $elapsed seconds"
 
