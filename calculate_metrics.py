@@ -55,14 +55,27 @@ def metrics_dict(pdf, lags, col_pred):
     model = xgb.XGBRegressor()
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
-    corrected_y_pred = [x*1.7+500 if x > 0 else 500 for x in y_pred]
+    from scipy.optimize import minimize
+
+    def optimize_params(y_test, y_pred, metric=rmse):
+        def objective(params):
+            a, b = params
+            y_corr = np.maximum(y_pred * a + b, b)
+            return metric(y_test, y_corr)
+        bounds = [(1e-6, None), (None, None)]  # a > 0, b unbounded
+        result = minimize(objective, x0=[1.0, 500], bounds=bounds)  # initial guess
+        a_opt, b_opt = result.x
+        return a_opt, b_opt, result.fun
+
+    a_opt, b_opt, _ = optimize_params(y_test, y_pred, metric=rmse)
+    corrected_y_pred = [x*a_opt+b_opt if x > 0 else b_opt for x in y_pred]
     mun =  munderest(y_test, y_pred)
     mun_corrected =  munderest(y_test, corrected_y_pred)
     mun_pct = munderest_pct(y_test, y_pred)
     mun_pct_corrected = munderest_pct(y_test, corrected_y_pred)
     rmse_val = rmse(y_test, corrected_y_pred)
     print("Results for column named: ", col_pred," with horizon of ", lags," steps ahead." )
-    d={col_pred+"_MeanUnderestimation":mun_corrected, col_pred+"_MeanUnderestimation_pct":mun_pct_corrected, col_pred+"_RMSE":rmse_val}
+    d={col_pred+"_MeanUnderestimation":mun_corrected, col_pred+"_MeanUnderestimation_pct":mun_pct_corrected, col_pred+"_RMSE":rmse_val, col_pred+"_optimal":[float(a_opt), float(b_opt)]}
     print(d)
     return d
     
@@ -79,11 +92,11 @@ def munderest_pct(y_actual, y_hat):
         for yi, yh in zip(y_actual, y_hat)
         if yh < yi and yi != 0
     ]
-    return sum(under_pct) / len(under_pct) if under_pct else 0
+    return float(sum(under_pct) / len(under_pct)) if under_pct else 0
   
 
 def rmse(y_actual, y_hat):
-    return np.sqrt(mean_squared_error(y_actual, y_hat))
+    return float(np.sqrt(mean_squared_error(y_actual, y_hat)))
 
     
 future_periods = 24  # 24-hour horizon
